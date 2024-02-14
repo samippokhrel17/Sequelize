@@ -1,7 +1,7 @@
 const express = require("express");
 var bodyParser = require("body-parser");
-const User = require("./models/user");
 const app = express();
+const { mysqlHelper } = require("./helpers");
 
 app.use(bodyParser.json());
 
@@ -9,8 +9,7 @@ app.get("/", (req, res) => {
   res.send("Hello");
 });
 
-User.sync({ force: true });
-
 app.listen(3000, () => {
+  mysqlHelper.connect();
   console.log("Server running in port 3000");
 });
