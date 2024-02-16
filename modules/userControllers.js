@@ -1,7 +1,8 @@
-const mysqlHelper = require("../helpers/dbconnect");
+const { connection } = require("../helpers");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
+let sqlString = require("sqlstring");
 
 const createToken = (_id) => {
   const jwtkey = process.env.JWT_SECRET_KEY;
@@ -11,14 +12,9 @@ const createToken = (_id) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    let { firstName, lastName, email, password } = req.body;
 
-    let user = await userModel.findOne({ email });
-
-    if (user)
-      return res.status(400).json("user with given email already exist...");
-
-    if (!name || !email || !password)
+    if (!firstName || !lastName || !email || !password)
       return res.status(400).json("All fields are required...");
 
     if (!validator.isStrongPassword(password))
@@ -28,50 +24,76 @@ const registerUser = async (req, res) => {
           "password must be strong password i.e special character, capital,small etc.."
         );
 
-    user = new userModel({ name, email, password });
-
     const salt = await bcrypt.genSalt(1); //salting adds randomness to the hash password
 
-    user.password = await bcrypt.hash(user.password, salt);
+    let hashpassword = await bcrypt.hash(password, salt);
+    let createdAt = new Date();
+    let updatedAt = new Date();
 
-    await user.save();
+    // main logic
+    let insertObj = {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      password: hashpassword,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    };
 
-    const token = createToken(user._id); //creating token i.e id will receive by above function and added to payload
+    let query = sqlString.format(`INSERT into Student SET ?`, [insertObj]);
 
-    res.status(200).json({ _id: user._id, name, email, token });
+    let [result] = await connection.query(query);
+
+    if (result.affectedRows > 0) return res.status(200).send("success");
+
+    return res.status(200).send("unsuccess");
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
   }
 };
 
-const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+const readUser = async (req, res) => {
+  const { email } = req.body;
 
   try {
-    let user = await userModel.findOne({ email });
+    let query = sqlString.format(`select * from Student where email =?`, [
+      email,
+    ]);
 
-    if (!user) return res.status(400).json("Invalid email or password...");
+    let [result] = await connection.query(query);
 
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword)
-      return res.send(400).json("invalid email or passowrd...");
+    if (!result) return res.status(400).json("Invalid email...");
 
-    const token = createToken(user._id);
-
-    res.status(200).json({ _id: user._id, name: user.name, email, token });
+    res.status(200).json(result);
   } catch (error) {
     console.log(error);
     // res.status(500).json(error
   }
 };
 
-const findUser = async (req, res) => {
-  const userId = req.params.userId;
+const updateUser = async (req, res) => {
+  const firstName = req.body.firstName;
+  const email = req.body.email;
   try {
-    const user = await userModel.findById(userId);
+    let query = sqlString.format(`select * from Student where email =?`, [
+      email,
+    ]);
 
-    res.status(200).json(user);
+    let [result] = await connection.query(query);
+    if (!result) {
+      return res.status(400).send("Not found data");
+    }
+
+    let updateQuery = sqlString.format(`update Student set firstName = ?`, [
+      firstName,
+    ]);
+
+    let [updateResult] = await connection.query(updateQuery);
+    if (updateResult.affectedRows > 0) {
+      return res.status(400).send("updated data");
+    }
+    return res.status(400).send("Not updated data");
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
@@ -89,4 +111,4 @@ const getUsers = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, findUser, getUsers };
+module.exports = { registerUser, readUser, updateUser, getUsers };

@@ -1,3 +1,3 @@
 module.exports = {
-  mysqlHelper: require("./dbconnect"),
+  connection: require("./dbconnect"),
 };
