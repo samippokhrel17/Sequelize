@@ -19,11 +19,9 @@ module.exports = {
         type: Sequelize.STRING,
       },
       timestamp: {
-        allowNull: false,
         type: Sequelize.DATE,
       },
       updatedAt: {
-        allowNull: false,
         type: Sequelize.DATE,
       },
     });

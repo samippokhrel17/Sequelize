@@ -4,14 +4,18 @@ const {
   registerUser,
   readUser,
   updateUser,
+  verifyUser,
 } = require("../modules/userControllers");
+
+const { createLog, readLog} = require('../modules/logController')
 
 const router = express.Router();
 
-router.post("/create", registerUser);
-router.get("/read", readUser);
-router.put("/update", updateUser);
+router.post("/create", createLog('api/v1/user/create','testing user creation'),registerUser);
+router.get("/read", createLog('api/v1/user/read','testing user creation'),readUser);
+router.put("/update",createLog('api/v1/user/update','testing user creation'), updateUser);
+router.put("/verify",createLog('api/v1/user/update','testing user creation'), verifyUser);
 
-// router.put("/verify", findUser);
 
+router.get('/read-log',readLog)
 module.exports = router;

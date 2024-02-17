@@ -49,7 +49,7 @@ const registerUser = async (req, res) => {
     return res.status(200).send("unsuccess");
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 };
 
@@ -68,25 +68,29 @@ const readUser = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.log(error);
-    // res.status(500).json(error
+    return res.status(500).json(error);
   }
 };
 
 const updateUser = async (req, res) => {
-  const firstName = req.body.firstName;
   const email = req.body.email;
+  const status = req.body.status?req.body.status:2;
+  const updatedBy = req.body.updatedByEmail
   try {
     let query = sqlString.format(`select * from Student where email =?`, [
       email,
     ]);
 
     let [result] = await connection.query(query);
-    if (!result) {
+    if (!result || result.email == updatedBy) {
       return res.status(400).send("Not found data");
     }
 
-    let updateQuery = sqlString.format(`update Student set firstName = ?`, [
-      firstName,
+
+
+    let updateQuery = sqlString.format(`update Student set status = ? where email = ?`, [
+      status,
+      email
     ]);
 
     let [updateResult] = await connection.query(updateQuery);
@@ -96,19 +100,37 @@ const updateUser = async (req, res) => {
     return res.status(400).send("Not updated data");
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 };
 
-const getUsers = async (req, res) => {
+const verifyUser = async (req, res) => {
   try {
-    const users = await userModel.find();
 
-    res.status(200).json(users);
+    let email = req.body.email;
+    let query = sqlString.format(`select * from Student where email =?`, [
+      email,
+    ]);
+
+    let [result] = await connection.query(query);
+
+    if (!result || result.status!=2) {
+      return res.status(400).send("Not found data");
+    }
+
+    let updateQuery = sqlString.format(`update Student set status = 1 where email = ?`, [
+      email
+    ]);
+
+    let [updateResult] = await connection.query(updateQuery);
+    if (updateResult.affectedRows > 0) {
+      return res.status(400).send("verified data");
+    }
+    res.status(200).send(`Verified user ${email}`);
   } catch (error) {
     console.log(error);
-    res.status(500).json(error);
+    return res.status(500).json(error);
   }
 };
 
-module.exports = { registerUser, readUser, updateUser, getUsers };
+module.exports = { registerUser, readUser, updateUser, verifyUser };
