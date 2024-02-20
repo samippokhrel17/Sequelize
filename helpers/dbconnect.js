@@ -1,13 +1,14 @@
-"use-strict";
+"use strict";
 const mysql = require("mysql2/promise");
-
+const dotenv = require("dotenv");
+dotenv.config();
 ((connection) => {
   let dbClient = null;
 
   connection.init = async () => {
     try {
       if (!dbClient) {
-        dbClient = mysql.createPool({
+        dbClient = await mysql.createPool({
           host: "localhost",
           user: "root",
           password: "1234",

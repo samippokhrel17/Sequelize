@@ -46,7 +46,7 @@ module.exports = {
           'superUser',
           'user'
         ],
-        default:'user'
+        defaultValue:'user'
 
       },
       status:{
@@ -57,7 +57,7 @@ module.exports = {
           '2',
           '3'
         ],
-        default:'3'
+        defaultValue:'3'
 
       }
 

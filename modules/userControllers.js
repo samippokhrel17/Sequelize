@@ -40,7 +40,9 @@ const registerUser = async (req, res) => {
       updatedAt: updatedAt,
     };
 
-    let query = sqlString.format(`INSERT into Student SET ?`, [insertObj]);
+    let query = sqlString.format(`INSERT into employeedb.Student SET ?`, [
+      insertObj,
+    ]);
 
     let [result] = await connection.query(query);
 
@@ -74,8 +76,8 @@ const readUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   const email = req.body.email;
-  const status = req.body.status?req.body.status:2;
-  const updatedBy = req.body.updatedByEmail
+  const status = req.body.status ? req.body.status : 2;
+  const updatedBy = req.body.updatedByEmail;
   try {
     let query = sqlString.format(`select * from Student where email =?`, [
       email,
@@ -86,12 +88,10 @@ const updateUser = async (req, res) => {
       return res.status(400).send("Not found data");
     }
 
-
-
-    let updateQuery = sqlString.format(`update Student set status = ? where email = ?`, [
-      status,
-      email
-    ]);
+    let updateQuery = sqlString.format(
+      `update Student set status = ? where email = ?`,
+      [status, email]
+    );
 
     let [updateResult] = await connection.query(updateQuery);
     if (updateResult.affectedRows > 0) {
@@ -106,7 +106,6 @@ const updateUser = async (req, res) => {
 
 const verifyUser = async (req, res) => {
   try {
-
     let email = req.body.email;
     let query = sqlString.format(`select * from Student where email =?`, [
       email,
@@ -114,13 +113,14 @@ const verifyUser = async (req, res) => {
 
     let [result] = await connection.query(query);
 
-    if (!result || result.status!=2) {
+    if (!result || result.status != 2) {
       return res.status(400).send("Not found data");
     }
 
-    let updateQuery = sqlString.format(`update Student set status = 1 where email = ?`, [
-      email
-    ]);
+    let updateQuery = sqlString.format(
+      `update Student set status = 1 where email = ?`,
+      [email]
+    );
 
     let [updateResult] = await connection.query(updateQuery);
     if (updateResult.affectedRows > 0) {
