@@ -113,7 +113,7 @@ const verifyUser = async (req, res) => {
 
     let [result] = await connection.query(query);
 
-    if (!result || result.status != 2) {
+    if (!result || result[0].status != 2) {
       return res.status(400).send("Not found data");
     }
 
