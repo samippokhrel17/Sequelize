@@ -10,8 +10,10 @@ const createToken = (_id) => {
   return jwt.sign({ _id }, jwtkey, { expiresIn: "3d" });
 };
 
+//user registration function..
 const registerUser = async (req, res) => {
   try {
+    // Destructure user data from request body
     let { firstName, lastName, email, password } = req.body;
 
     if (!firstName || !lastName || !email || !password)
@@ -30,7 +32,7 @@ const registerUser = async (req, res) => {
     let createdAt = new Date();
     let updatedAt = new Date();
 
-    // main logic
+    // object to insert into database.....
     let insertObj = {
       firstName: firstName,
       lastName: lastName,
@@ -39,15 +41,16 @@ const registerUser = async (req, res) => {
       createdAt: createdAt,
       updatedAt: updatedAt,
     };
-
+    // query to insert
     let query = sqlString.format(`INSERT into employeedb.Student SET ?`, [
       insertObj,
     ]);
-
+    // insert query execution..
     let [result] = await connection.query(query);
 
     if (result.affectedRows > 0) return res.status(200).send("success");
 
+    //on success of insert
     return res.status(200).send("unsuccess");
   } catch (error) {
     console.log(error);
@@ -55,10 +58,14 @@ const registerUser = async (req, res) => {
   }
 };
 
+//read user fuction
+
 const readUser = async (req, res) => {
   const { email } = req.body;
 
   try {
+    // query to read user by selecting email provided...
+
     let query = sqlString.format(`select * from Student where email =?`, [
       email,
     ]);
@@ -67,6 +74,7 @@ const readUser = async (req, res) => {
 
     if (!result) return res.status(400).json("Invalid email...");
 
+    //send user  data in response if user exist....
     res.status(200).json(result);
   } catch (error) {
     console.log(error);
@@ -74,26 +82,36 @@ const readUser = async (req, res) => {
   }
 };
 
+// update user function....
+
 const updateUser = async (req, res) => {
   const email = req.body.email;
   const status = req.body.status ? req.body.status : 2;
   const updatedBy = req.body.updatedByEmail;
   try {
+    //query to select user by email....
+
     let query = sqlString.format(`select * from Student where email =?`, [
       email,
     ]);
-
+    //query execution...
     let [result] = await connection.query(query);
+
+    //if user exist or email update is the same as the users email..
     if (!result || result.email == updatedBy) {
       return res.status(400).send("Not found data");
     }
-
+    // change user status
     let updateQuery = sqlString.format(
       `update Student set status = ? where email = ?`,
       [status, email]
     );
 
+    //update execution
+
     let [updateResult] = await connection.query(updateQuery);
+
+    // update success checkin
     if (updateResult.affectedRows > 0) {
       return res.status(400).send("updated data");
     }
@@ -104,15 +122,18 @@ const updateUser = async (req, res) => {
   }
 };
 
+// verify user function
+
 const verifyUser = async (req, res) => {
   try {
-    let email = req.body.email;
+    let email = req.body.email; //
     let query = sqlString.format(`select * from Student where email =?`, [
       email,
     ]);
 
     let [result] = await connection.query(query);
 
+    // usser status update
     if (!result || result[0].status != 2) {
       return res.status(400).send("Not found data");
     }

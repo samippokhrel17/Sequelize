@@ -2,13 +2,16 @@ const { connection } = require("../helpers");
 
 let sqlString = require("sqlstring");
 
+//function to create log entry.
+
 const createLog = async (url, detail) => {
   try {
-    if (!url || !detail) return false;
+    if (!url || !detail) return false; //check URL or details
     // return res.status(400).json("All fields are required...");
 
     let timeStamp = new Date();
 
+    // objs to insert in log table.
     let insertObj = {
       // url: firstName,
       url: url,
@@ -16,17 +19,19 @@ const createLog = async (url, detail) => {
       timeStamp: timeStamp,
     };
 
-    let query = sqlString.format(`INSERT into logTables SET ?`, [insertObj]);
+    let query = sqlString.format(`INSERT into logTables SET ?`, [insertObj]); //insert querry
 
-    let [result] = await connection.query(query);
+    let [result] = await connection.query(query); //execution of query
 
-    if (result.affectedRows > 0) return true;
+    if (result.affectedRows > 0) return true; //checkign insert success?
 
     return false;
   } catch (error) {
     throw error;
   }
 };
+
+//function to read log entries.
 
 const readLog = async (req, res) => {
   try {
@@ -36,7 +41,7 @@ const readLog = async (req, res) => {
 
     if (!result) return res.status(400).json("not found...");
 
-    res.status(200).json(result);
+    res.status(200).json(result); //sending log entries in response
   } catch (error) {
     console.log(error);
     res.status(500).json(error);

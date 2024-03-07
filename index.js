@@ -7,10 +7,9 @@ const { connection } = require("./helpers");
 let port = 3000;
 app.use(bodyParser.json());
 
-// app.use("/",(req,res,next)=>
-// {
-//   return res.send({message:"welcome to my project"})
-// })
+app.use("/", (req, res, next) => {
+  return res.send({ message: "welcome to my project" });
+});
 
 app.use("/", userRoute);
 
